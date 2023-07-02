@@ -74,8 +74,23 @@ func createTaskHBox(task Task, MainWindow fyne.Window) fyne.CanvasObject {
 			}
 		}, MainWindow)
 	})
-	taskhbox := container.New(layout.NewHBoxLayout(), widget.NewLabel(task.Task), layout.NewSpacer(), remove)
-	return taskhbox
+	if currentStatusPage == "incomplete" {
+		markComplete := widget.NewButtonWithIcon("", theme.ConfirmIcon(), func() {
+			db.Exec("UPDATE task SET status='complete' WHERE id=?", task.Id)
+			RefreshTaskList(MainWindow)
+		})
+		taskhbox := container.New(layout.NewHBoxLayout(), widget.NewLabel(task.Task), layout.NewSpacer(), markComplete, remove)
+		return taskhbox
+	} else if currentStatusPage == "complete" {
+		markIncomplete := widget.NewButtonWithIcon("", theme.CancelIcon(), func() {
+			db.Exec("UPDATE task SET status='incomplete' WHERE id=?", task.Id)
+			RefreshTaskList(MainWindow)
+		})
+		taskhbox := container.New(layout.NewHBoxLayout(), widget.NewLabel(task.Task), layout.NewSpacer(), markIncomplete, remove)
+		return taskhbox
+	}
+	fakeahhcontainer := container.New(layout.NewHBoxLayout(), widget.NewLabel("If your seeing this, something broke dawg 💀"))
+	return fakeahhcontainer
 }
 
 func PutTasksInLayout(TodoList []Task, MainWindow fyne.Window) *fyne.Container {
@@ -90,31 +105,41 @@ func PutTasksInLayout(TodoList []Task, MainWindow fyne.Window) *fyne.Container {
 			}
 		}, MainWindow)
 	})
-	newTaskButtonContainer := container.New(layout.NewHBoxLayout(), layout.NewSpacer(), createNewTask)
+	toolbar := widget.NewToolbar(
+		widget.NewToolbarAction(theme.CancelIcon(), func() {
+			currentStatusPage = "incomplete"
+			RefreshTaskList(MainWindow)
+		}),
+		widget.NewToolbarAction(theme.ConfirmIcon(), func() {
+			currentStatusPage = "complete"
+			RefreshTaskList(MainWindow)
+		}),
+	)
+	newTaskButtonContainer := container.New(layout.NewHBoxLayout(), toolbar, layout.NewSpacer(), createNewTask)
 	content.Add(newTaskButtonContainer)
-	for i := 0; i < len(TodoList); i++ {
-		if TodoList[i].Status == "incomplete" && TodoList[i].User == int(userId) {
-			taskhbox := createTaskHBox(TodoList[i], MainWindow)
-			content.Add(taskhbox)
-		}
-	}
-	return content
+	return GrabTaskByStatus(currentStatusPage, TodoList, content, MainWindow)
 }
 
 func RefreshTaskList(MainWindow fyne.Window) {
-	content := container.New(layout.NewVBoxLayout())
-	taskFormEntry := widget.NewEntry()
-	etaskFormEntry := widget.NewFormItem("Task:", taskFormEntry)
-	createNewTask := widget.NewButtonWithIcon("Add", theme.ContentAddIcon(), func() {
-		// dialog.ShowEntryDialog("New Task", "Task:", func(s string) { CreateNewTask(s, "incomplete") }, MainWindow) //deprecated
-		dialog.ShowForm("New Task", "Ok", "Cancel", []*widget.FormItem{etaskFormEntry}, func(b bool) {
-			if b {
-				CreateTask(taskFormEntry.Text, "incomplete", MainWindow)
-			}
-		}, MainWindow)
-	})
-	newTaskButtonContainer := container.New(layout.NewHBoxLayout(), layout.NewSpacer(), createNewTask)
-	content.Add(newTaskButtonContainer)
 	TodoList := GetTaskData()
 	MainWindow.SetContent(PutTasksInLayout(TodoList, MainWindow))
+}
+
+func GrabTaskByStatus(status string, TodoList []Task, content *fyne.Container, MainWindow fyne.Window) *fyne.Container {
+	if status == "incomplete" {
+		for i := 0; i < len(TodoList); i++ {
+			if TodoList[i].Status == "incomplete" && TodoList[i].User == int(userId) {
+				taskhbox := createTaskHBox(TodoList[i], MainWindow)
+				content.Add(taskhbox)
+			}
+		}
+	} else if status == "complete" {
+		for i := 0; i < len(TodoList); i++ {
+			if TodoList[i].Status == "complete" && TodoList[i].User == int(userId) {
+				taskhbox := createTaskHBox(TodoList[i], MainWindow)
+				content.Add(taskhbox)
+			}
+		}
+	}
+	return content
 }

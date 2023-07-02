@@ -12,5 +12,6 @@ INSERT INTO task
 VALUES
     ('Buy groceries', 'incomplete', 1),
     ('Complete programming project', 'incomplete', 1),
+    ('Walk dog', 'complete', 1),
     ('Book a doctors appointment', 'incomplete', 2);
 -- default testing data

@@ -16,6 +16,7 @@ import (
 
 var db *sql.DB
 var userId int64
+var currentStatusPage string = "incomplete"
 
 type User struct {
 	Id         int
