@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"database/sql"
 	"fmt"
 	"log"
@@ -57,8 +58,10 @@ func ConnectToSql() {
 }
 
 func main() {
-	TodoGui := app.New()
-	MainWindow := TodoGui.NewWindow("Todo List Manager - @Pineman834")
+	var (
+		TodoGui    = app.New()
+		MainWindow = TodoGui.NewWindow("Todo List Manager - @Pineman834")
+	)
 	MainWindow.Resize(fyne.NewSize(400, 100))
 	ConnectToSql()
 
@@ -67,17 +70,20 @@ func main() {
 }
 
 func MainPage(MainWindow fyne.Window) {
-	TodoList := GetTaskData()
-	content := PutTasksInLayout(TodoList, MainWindow)
+	var (
+		TodoList = GetTaskData()
+		content  = PutTasksInLayout(TodoList, MainWindow)
+	)
 	MainWindow.SetContent(content)
 }
 
 func LoginPage(MainWindow fyne.Window) {
-	// MainWindow.Resize(fyne.NewSize(400, 100)) //DOESNT WORK
-	uname := widget.NewEntry()
-	pword := widget.NewEntry()
+	var (
+		uname   = widget.NewEntry()
+		pword   = widget.NewEntry()
+		newuser = widget.NewButton("Sign up", func() { NewUserPage(MainWindow) })
+	)
 	pword.Password = true
-	newuser := widget.NewButton("Sign up", func() { NewUserPage(MainWindow) })
 
 	form := &widget.Form{
 		Items: []*widget.FormItem{
@@ -99,12 +105,15 @@ func LoginPage(MainWindow fyne.Window) {
 }
 
 func NewUserPage(MainWindow fyne.Window) {
-	name := widget.NewEntry()
-	uname := widget.NewEntry()
-	email := widget.NewEntry()
-	pword := widget.NewEntry()
+	var (
+		name            = widget.NewEntry()
+		uname           = widget.NewEntry()
+		email           = widget.NewEntry()
+		pword           = widget.NewEntry()
+		sha256pword     = sha256.Sum256([]byte(uname.Text))
+		loginpagebutton = widget.NewButton("Login", func() { LoginPage(MainWindow) })
+	)
 	pword.Password = true
-	loginpagebutton := widget.NewButton("Login", func() { LoginPage(MainWindow) })
 
 	form := &widget.Form{
 		Items: []*widget.FormItem{
@@ -112,7 +121,7 @@ func NewUserPage(MainWindow fyne.Window) {
 		OnSubmit: func() {
 			usrID, err := createUser(User{
 				Name:     name.Text,
-				Username: uname.Text,
+				Username: string(sha256pword[:]),
 				Email:    email.Text,
 				Password: pword.Text,
 			})

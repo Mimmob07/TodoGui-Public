@@ -94,9 +94,11 @@ func createTaskHBox(task Task, MainWindow fyne.Window) fyne.CanvasObject {
 }
 
 func PutTasksInLayout(TodoList []Task, MainWindow fyne.Window) *fyne.Container {
-	content := container.New(layout.NewVBoxLayout())
-	taskFormEntry := widget.NewEntry()
-	etaskFormEntry := widget.NewFormItem("Task:", taskFormEntry)
+	var (
+		content        = container.New(layout.NewVBoxLayout())
+		taskFormEntry  = widget.NewEntry()
+		etaskFormEntry = widget.NewFormItem("Task:", taskFormEntry)
+	)
 	createNewTask := widget.NewButtonWithIcon("Add", theme.ContentAddIcon(), func() {
 		// dialog.ShowEntryDialog("New Task", "Task:", func(s string) { CreateNewTask(s, "incomplete") }, MainWindow) //deprecated
 		dialog.ShowForm("New Task", "Ok", "Cancel", []*widget.FormItem{etaskFormEntry}, func(b bool) {
