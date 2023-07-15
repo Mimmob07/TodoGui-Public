@@ -110,7 +110,6 @@ func NewUserPage(MainWindow fyne.Window) {
 		uname           = widget.NewEntry()
 		email           = widget.NewEntry()
 		pword           = widget.NewEntry()
-		sha256pword     = sha256.Sum256([]byte(uname.Text))
 		loginpagebutton = widget.NewButton("Login", func() { LoginPage(MainWindow) })
 	)
 	pword.Password = true
@@ -119,11 +118,12 @@ func NewUserPage(MainWindow fyne.Window) {
 		Items: []*widget.FormItem{
 			{Text: "Name:", Widget: name}},
 		OnSubmit: func() {
+			sha256pword := sha256.Sum256([]byte(pword.Text))
 			usrID, err := createUser(User{
 				Name:     name.Text,
-				Username: string(sha256pword[:]),
+				Username: uname.Text,
 				Email:    email.Text,
-				Password: pword.Text,
+				Password: fmt.Sprintf("%x", sha256pword),
 			})
 			if err != nil {
 				log.Fatal(err)

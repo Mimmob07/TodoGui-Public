@@ -7,7 +7,7 @@ import (
 
 func login(liveusername string, livepassword string) []User {
 	var users []User
-	PwordSum := sha256.Sum256([]byte(liveusername))
+	PwordSum := sha256.Sum256([]byte(livepassword))
 
 	rows, err := db.Query("SELECT * FROM user WHERE username = ? AND password = ?", liveusername, fmt.Sprintf("%x", PwordSum))
 	if err != nil {
