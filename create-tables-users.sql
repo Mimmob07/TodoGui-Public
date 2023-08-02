@@ -23,3 +23,4 @@ VALUES
 
 
 -- default testing data
+-- paswords are hashed using sha256
